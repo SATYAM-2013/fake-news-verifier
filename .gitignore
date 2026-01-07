@@ -1,0 +1,18 @@
+# Trained models & checkpoints
+# PyCharm / IDE
+.idea/
+model/
+fine_tuned_model/
+full_text_model/
+
+# HuggingFace cache
+.cache/
+huggingface/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+.venv/

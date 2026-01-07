@@ -1,0 +1,9 @@
+.venv
+__pycache__
+*.csv
+*.zip
+*.pt
+*.bin
+*.safetensors
+.idea
+.pytest_cache
