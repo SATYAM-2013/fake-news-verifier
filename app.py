@@ -46,11 +46,16 @@ if st.button("Verify"):
     # ---------------- Call FastAPI Backend ----------------
     with st.spinner("🔍 Verifying with backend AI..."):
         try:
+            import os
+
+            BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
+
             response = requests.post(
-                "http://127.0.0.1:8000/verify",
+                f"{BACKEND_URL}/verify",
                 json={"text": news},
                 timeout=15
             )
+
         except requests.exceptions.RequestException:
             st.error("❌ Backend is not running. Start FastAPI first.")
             st.stop()
