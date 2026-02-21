@@ -19,6 +19,22 @@ app = FastAPI(
 
 
 # -------------------------------------------------
+# Health & Root Endpoints (Fixes 404)
+# -------------------------------------------------
+@app.get("/")
+def root():
+    return {
+        "message": "Fake News Verification API is running",
+        "docs": "/docs"
+    }
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+
+# -------------------------------------------------
 # Request / Response Models
 # -------------------------------------------------
 class NewsRequest(BaseModel):
@@ -39,13 +55,6 @@ class NewsResponse(BaseModel):
 # -------------------------------------------------
 @app.post("/verify", response_model=NewsResponse)
 def verify_news(request: NewsRequest):
-    """
-    Verifies a news claim using:
-    1. Transformer-based ML model
-    2. Google Fact Check API
-    3. Rule-based decision logic
-    4. LLM-based explanation (Gemini)
-    """
 
     # Step 1: ML prediction
     ml_result = predict_news(request.text)
@@ -56,7 +65,7 @@ def verify_news(request: NewsRequest):
     # Step 3: Final decision logic
     decision = final_decision(ml_result, fact_result)
 
-    # Step 4: LLM explanation (safe, optional)
+    # Step 4: LLM explanation
     explanation = explain_decision(
         text=request.text,
         verdict=decision["verdict"],
@@ -65,7 +74,6 @@ def verify_news(request: NewsRequest):
         sources=decision.get("sources", [])
     )
 
-    # Step 5: API response
     return {
         "verdict": decision["verdict"],
         "confidence": ml_result["confidence"],
