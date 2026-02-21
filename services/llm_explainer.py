@@ -1,17 +1,31 @@
 from utils.cache import get_llm_cache, set_llm_cache
 
 def explain_decision(text, verdict, ml_label, confidence, sources):
-    cache_key = f"{text}|{verdict}|{ml_label}"
+    """
+    Generates structured explanation for the final decision.
+    """
 
-    cached = get_llm_cache(cache_key)
-    if cached:
-        return cached
+    if sources and verdict.lower() != ml_label.lower():
+        explanation = (
+            f"The ML model predicted '{ml_label}' "
+            f"(confidence: {confidence:.2f}). "
+            f"However, verified external fact-check sources support this claim. "
+            f"According to the evidence-first policy, the final verdict is '{verdict}'."
+        )
 
-    explanation = (
-        f"The system classified this claim as '{verdict}'. "
-        f"The AI model predicted '{ml_label}' with {confidence*100:.1f}% confidence. "
-        f"Fact-check sources found: {len(sources)}."
-    )
+    elif sources:
+        explanation = (
+            f"The ML model predicted '{ml_label}' "
+            f"(confidence: {confidence:.2f}). "
+            f"Verified fact-check sources align with this prediction. "
+            f"The final verdict is '{verdict}'."
+        )
 
-    set_llm_cache(cache_key, explanation)
+    else:
+        explanation = (
+            f"The ML model predicted '{ml_label}' "
+            f"(confidence: {confidence:.2f}). "
+            f"No verified external evidence was found, so the verdict is based on the model's prediction."
+        )
+
     return explanation
