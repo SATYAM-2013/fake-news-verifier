@@ -1,8 +1,5 @@
-Here’s a **professional, recruiter-attracting README template** for your **Fake News Classifier Project** that you can directly copy to GitHub and customize.
-
----
-
 # 📰 Fake News Detection System
+> Developed by **SATYAM SINHA**
 
 > A Machine Learning based web application that classifies news articles as **Real** or **Fake** using NLP techniques.
 
@@ -29,7 +26,7 @@ This project demonstrates:
 ✔ TF-IDF vectorization
 ✔ Multiple ML model comparison
 ✔ Accuracy & performance evaluation
-✔ User-friendly interface (if deployed)
+✔ User-friendly interface
 
 ---
 
@@ -40,8 +37,8 @@ This project demonstrates:
 * **Pandas**
 * **NumPy**
 * **NLTK**
-* **Flask / Streamlit (if used)**
-* **Matplotlib / Seaborn (for visualization)**
+* **Streamlit**
+* **Matplotlib (for visualization)**
 
 ---
 
@@ -64,18 +61,6 @@ This project demonstrates:
 3. Convert text → TF-IDF vectors
 4. Pass to trained ML model
 5. Output prediction (Fake / Real)
-
----
-
-## 📊 Model Performance
-
-| Model               | Accuracy |
-| ------------------- | -------- |
-| Logistic Regression | XX%      |
-| Naive Bayes         | XX%      |
-| Random Forest       | XX%      |
-
-(Add your real results here)
 
 ---
 
@@ -148,3 +133,4 @@ Contributions are welcome! Feel free to fork and submit pull requests.
 ## 📬 Connect With Me
 
 LinkedIn: https://www.linkedin.com/in/satyam-sinha-b1646435b/
+GitHub: https://github.com/satyam-2013
