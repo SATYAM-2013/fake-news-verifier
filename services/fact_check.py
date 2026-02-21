@@ -20,11 +20,30 @@ TRUSTED_PUBLISHERS = [
 ]
 
 
-def fact_check_claim(text: str):
-    cached = get_fact_cache(text)
-    if cached:
-        return cached
+# -------------------------------------------------
+# Relevance Filter (Prevents False Overrides)
+# -------------------------------------------------
+def is_relevant_claim(user_text: str, fact_claim_text: str) -> bool:
+    """
+    Checks whether the fact-check claim text is actually
+    relevant to the user's input claim.
+    """
+    if not fact_claim_text:
+        return False
 
+    user_words = set(user_text.lower().split())
+    fact_words = set(fact_claim_text.lower().split())
+
+    overlap = user_words.intersection(fact_words)
+
+    # Require minimum overlap threshold
+    return len(overlap) >= 5
+
+
+# -------------------------------------------------
+# Fact Check Main Function
+# -------------------------------------------------
+def fact_check_claim(text: str):
     """
     Returns:
     {
@@ -32,6 +51,11 @@ def fact_check_claim(text: str):
         sources: [urls]
     }
     """
+
+    # ✅ Check cache first
+    cached = get_fact_cache(text)
+    if cached:
+        return cached
 
     if not API_KEY:
         return {"verdict": "none", "sources": []}
@@ -57,28 +81,44 @@ def fact_check_claim(text: str):
     support = 0
     contradict = 0
 
-    claim_text = text.lower()
-    negation = any(word in claim_text for word in ["not", "no", "never", "doesn't", "does not"])
+    claim_text_lower = text.lower()
+
+    # Detect negation in user claim
+    negation = any(word in claim_text_lower for word in [
+        "not", "no", "never", "doesn't", "does not"
+    ])
 
     for claim in claims:
+
+        fact_claim_text = claim.get("text", "")
+
+        # ✅ Skip irrelevant fact-check claims
+        if not is_relevant_claim(text, fact_claim_text):
+            continue
+
         for review in claim.get("claimReview", []):
+
             url = review.get("url", "")
             rating = review.get("textualRating", "").lower()
 
+            # ✅ Only allow trusted publishers
             if not any(pub in url for pub in TRUSTED_PUBLISHERS):
                 continue
 
             sources.append(url)
 
-            if rating in ["true", "correct", "accurate"]:
+            # Normalize rating
+            if any(word in rating for word in ["true", "correct", "accurate"]):
                 support += 1
 
-            elif rating in ["false", "incorrect", "pants on fire", "misleading"]:
+            elif any(word in rating for word in ["false", "incorrect", "misleading", "pants on fire"]):
+                # Handle negation logic
                 if negation:
                     support += 1
                 else:
                     contradict += 1
 
+    # Determine final verdict
     if support > contradict:
         verdict = "supports"
     elif contradict > support:
@@ -92,10 +132,8 @@ def fact_check_claim(text: str):
         "verdict": verdict,
         "sources": list(set(sources))
     }
-    set_fact_cache(text, result)
-    return result
 
-    return {
-        "verdict": verdict,
-        "sources": list(set(sources))
-    }
+    # Cache result
+    set_fact_cache(text, result)
+
+    return result
