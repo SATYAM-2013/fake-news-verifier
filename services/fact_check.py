@@ -1,5 +1,6 @@
 import os
 import requests
+import re
 from dotenv import load_dotenv
 from utils.cache import get_fact_cache, set_fact_cache
 
@@ -21,23 +22,58 @@ TRUSTED_PUBLISHERS = [
 
 
 # -------------------------------------------------
-# Relevance Filter (Prevents False Overrides)
+# Text Normalization
+# -------------------------------------------------
+def normalize_text(text: str) -> str:
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9\s]", "", text)
+    return text
+
+
+# -------------------------------------------------
+# Extract Simplified Query (Improves API Results)
+# -------------------------------------------------
+def extract_main_claim(text: str) -> str:
+    words = text.split()
+    if len(words) > 12:
+        return " ".join(words[:12])
+    return text
+
+
+# -------------------------------------------------
+# Relevance Check (Smarter & Less Strict)
 # -------------------------------------------------
 def is_relevant_claim(user_text: str, fact_claim_text: str) -> bool:
-    """
-    Checks whether the fact-check claim text is actually
-    relevant to the user's input claim.
-    """
     if not fact_claim_text:
         return False
 
-    user_words = set(user_text.lower().split())
-    fact_words = set(fact_claim_text.lower().split())
+    user_words = set(normalize_text(user_text).split())
+    fact_words = set(normalize_text(fact_claim_text).split())
 
     overlap = user_words.intersection(fact_words)
 
-    # Require minimum overlap threshold
-    return len(overlap) >= 5
+    # Reduced threshold to avoid missing real claims
+    return len(overlap) >= 3
+
+
+# -------------------------------------------------
+# Rating Classification
+# -------------------------------------------------
+def classify_rating(rating: str):
+    rating = rating.lower()
+
+    if any(word in rating for word in [
+        "true", "correct", "accurate", "mostly true"
+    ]):
+        return "support"
+
+    if any(word in rating for word in [
+        "false", "incorrect", "misleading",
+        "pants on fire", "mostly false"
+    ]):
+        return "contradict"
+
+    return "neutral"
 
 
 # -------------------------------------------------
@@ -52,7 +88,7 @@ def fact_check_claim(text: str):
     }
     """
 
-    # ✅ Check cache first
+    # ✅ Cache Check
     cached = get_fact_cache(text)
     if cached:
         return cached
@@ -60,8 +96,10 @@ def fact_check_claim(text: str):
     if not API_KEY:
         return {"verdict": "none", "sources": []}
 
+    simplified_query = extract_main_claim(text)
+
     params = {
-        "query": text,
+        "query": simplified_query,
         "key": API_KEY,
         "languageCode": "en"
     }
@@ -77,54 +115,48 @@ def fact_check_claim(text: str):
     if not claims:
         return {"verdict": "none", "sources": []}
 
-    sources = []
     support = 0
     contradict = 0
+    sources = []
 
-    claim_text_lower = text.lower()
-
-    # Detect negation in user claim
-    negation = any(word in claim_text_lower for word in [
-        "not", "no", "never", "doesn't", "does not"
-    ])
+    user_text_norm = normalize_text(text)
 
     for claim in claims:
-
         fact_claim_text = claim.get("text", "")
 
-        # ✅ Skip irrelevant fact-check claims
         if not is_relevant_claim(text, fact_claim_text):
             continue
 
         for review in claim.get("claimReview", []):
-
             url = review.get("url", "")
-            rating = review.get("textualRating", "").lower()
+            rating = review.get("textualRating", "")
 
-            # ✅ Only allow trusted publishers
+            # Only trusted sources
             if not any(pub in url for pub in TRUSTED_PUBLISHERS):
                 continue
 
-            sources.append(url)
+            classification = classify_rating(rating)
 
-            # Normalize rating
-            if any(word in rating for word in ["true", "correct", "accurate"]):
+            if classification == "support":
                 support += 1
+                sources.append(url)
 
-            elif any(word in rating for word in ["false", "incorrect", "misleading", "pants on fire"]):
-                # Handle negation logic
-                if negation:
-                    support += 1
-                else:
-                    contradict += 1
+            elif classification == "contradict":
+                contradict += 1
+                sources.append(url)
 
-    # Determine final verdict
-    if support > contradict:
+    # -------------------------------------------------
+    # Final Verdict Logic (Stable & Balanced)
+    # -------------------------------------------------
+    if support > contradict and support > 0:
         verdict = "supports"
-    elif contradict > support:
+
+    elif contradict > support and contradict > 0:
         verdict = "contradicts"
+
     elif support == 0 and contradict == 0:
         verdict = "none"
+
     else:
         verdict = "mixed"
 
@@ -133,7 +165,6 @@ def fact_check_claim(text: str):
         "sources": list(set(sources))
     }
 
-    # Cache result
     set_fact_cache(text, result)
 
     return result
