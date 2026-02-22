@@ -1,36 +1,41 @@
-# utils/decision.py
-
 from utils.medical_rules import is_medical_claim
 
+
 def final_decision(ml_result, fact_result):
+
     ml_label = ml_result.get("label", "").lower()
     confidence = ml_result.get("confidence", 0)
-    sources = fact_result.get("sources", [])
-    evidence = fact_result.get("verdict")  # supports / contradicts / none
 
-    # 1️⃣ Fact-check overrides everything
-    if evidence == "contradicts":
+    evidence = fact_result.get("verdict", "none")
+    sources = fact_result.get("sources", [])
+
+    # -----------------------------------------
+    # 1️⃣ Fact-check overrides (if reliable)
+    # -----------------------------------------
+    if evidence == "contradicts" and sources:
         return {
             "verdict": "Fake News",
             "reason": "Verified fact-check sources contradict this claim.",
             "sources": sources
         }
 
-    if evidence == "supports":
+    if evidence == "supports" and sources:
         return {
             "verdict": "Likely True News",
             "reason": "Verified fact-check sources support this claim.",
             "sources": sources
         }
 
-    # 2️⃣ No external evidence found
-    if not sources:
-        # If ML is very confident
+    # -----------------------------------------
+    # 2️⃣ No fact-check evidence found
+    # -----------------------------------------
+    if evidence == "none" or not sources:
+
         if confidence >= 0.90:
             if ml_label == "fake":
                 return {
                     "verdict": "Fake News",
-                    "reason": "High-confidence AI prediction with no supporting evidence found.",
+                    "reason": "High-confidence AI prediction. No contradicting evidence found.",
                     "sources": []
                 }
             else:
@@ -40,16 +45,17 @@ def final_decision(ml_result, fact_result):
                     "sources": []
                 }
 
-        # Otherwise uncertain
         return {
             "verdict": "Uncertain",
-            "reason": "Insufficient evidence and low AI confidence.",
+            "reason": "Insufficient external evidence and moderate AI confidence.",
             "sources": []
         }
 
-    # 3️⃣ Fallback
+    # -----------------------------------------
+    # 3️⃣ Mixed evidence
+    # -----------------------------------------
     return {
         "verdict": "Uncertain",
-        "reason": "Unable to determine with available information.",
+        "reason": "Conflicting information detected from available sources.",
         "sources": sources
     }

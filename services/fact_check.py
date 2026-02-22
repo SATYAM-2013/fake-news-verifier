@@ -31,17 +31,15 @@ def normalize_text(text: str) -> str:
 
 
 # -------------------------------------------------
-# Extract Simplified Query (Improves API Results)
+# Extract Short Query (Improves API Match)
 # -------------------------------------------------
 def extract_main_claim(text: str) -> str:
     words = text.split()
-    if len(words) > 12:
-        return " ".join(words[:12])
-    return text
+    return " ".join(words[:12])
 
 
 # -------------------------------------------------
-# Relevance Check (Smarter & Less Strict)
+# Relevance Check
 # -------------------------------------------------
 def is_relevant_claim(user_text: str, fact_claim_text: str) -> bool:
     if not fact_claim_text:
@@ -52,8 +50,7 @@ def is_relevant_claim(user_text: str, fact_claim_text: str) -> bool:
 
     overlap = user_words.intersection(fact_words)
 
-    # Reduced threshold to avoid missing real claims
-    return len(overlap) >= 3
+    return len(overlap) >= 2
 
 
 # -------------------------------------------------
@@ -77,7 +74,17 @@ def classify_rating(rating: str):
 
 
 # -------------------------------------------------
-# Fact Check Main Function
+# Detect Negation
+# -------------------------------------------------
+def has_negation(text: str) -> bool:
+    text = normalize_text(text)
+    return any(word in text for word in [
+        "not", "no", "never", "doesnt", "does not"
+    ])
+
+
+# -------------------------------------------------
+# Main Fact Check Function
 # -------------------------------------------------
 def fact_check_claim(text: str):
     """
@@ -88,7 +95,6 @@ def fact_check_claim(text: str):
     }
     """
 
-    # ✅ Cache Check
     cached = get_fact_cache(text)
     if cached:
         return cached
@@ -119,7 +125,7 @@ def fact_check_claim(text: str):
     contradict = 0
     sources = []
 
-    user_text_norm = normalize_text(text)
+    user_negation = has_negation(text)
 
     for claim in claims:
         fact_claim_text = claim.get("text", "")
@@ -127,36 +133,42 @@ def fact_check_claim(text: str):
         if not is_relevant_claim(text, fact_claim_text):
             continue
 
+        fact_negation = has_negation(fact_claim_text)
+
         for review in claim.get("claimReview", []):
             url = review.get("url", "")
             rating = review.get("textualRating", "")
 
-            # Only trusted sources
             if not any(pub in url for pub in TRUSTED_PUBLISHERS):
                 continue
 
             classification = classify_rating(rating)
 
-            if classification == "support":
-                support += 1
-                sources.append(url)
+            if classification == "neutral":
+                continue
 
-            elif classification == "contradict":
-                contradict += 1
-                sources.append(url)
+            # Polarity-aware scoring
+            if classification == "contradict":
+                if user_negation == fact_negation:
+                    contradict += 1
+                else:
+                    support += 1
 
-    # -------------------------------------------------
-    # Final Verdict Logic (Stable & Balanced)
-    # -------------------------------------------------
+            elif classification == "support":
+                if user_negation == fact_negation:
+                    support += 1
+                else:
+                    contradict += 1
+
+            sources.append(url)
+
+    # Final verdict
     if support > contradict and support > 0:
         verdict = "supports"
-
     elif contradict > support and contradict > 0:
         verdict = "contradicts"
-
     elif support == 0 and contradict == 0:
         verdict = "none"
-
     else:
         verdict = "mixed"
 
@@ -166,5 +178,4 @@ def fact_check_claim(text: str):
     }
 
     set_fact_cache(text, result)
-
     return result
