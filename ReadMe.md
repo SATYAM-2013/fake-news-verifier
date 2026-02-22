@@ -1,4 +1,7 @@
-# 📰 Fake News Detection System
+<h1 align="center">📰 Fake News Verification System</h1>
+<p align="center">
+Hybrid AI + Fact-Check Based Misinformation Detection System
+</p>
 > Developed by **SATYAM SINHA**
 
 > A Machine Learning based web application that classifies news articles as **Real** or **Fake** using NLP techniques.
@@ -124,13 +127,19 @@ fake-news-detection/
 ## 📸 Application Preview
 
 ### 🏠 Home Page
-![Home Page](Screenshots/Home.png)
+<p align="center">
+  <img src="Screenshots/Home.png" width="800"/>
+</p>
 
 ### ❌ Fake News Detection
-![Fake Result](Screenshots/Fake_result.png)
+<p align="center">
+  <img src="Screenshots/Fake_result.png" width="800"/>
+</p>
 
 ### ✅ True News Detection
-![True Result](Screenshots/True_result.png)
+<p align="center">
+  <img src="Screenshots/True_result.png" width="800"/>
+</p>
 
 ---
 
