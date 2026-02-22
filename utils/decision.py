@@ -1,6 +1,3 @@
-from utils.medical_rules import is_medical_claim
-
-
 def final_decision(ml_result, fact_result):
 
     ml_label = ml_result.get("label", "").lower()
@@ -9,9 +6,7 @@ def final_decision(ml_result, fact_result):
     evidence = fact_result.get("verdict", "none")
     sources = fact_result.get("sources", [])
 
-    # -----------------------------------------
-    # 1️⃣ Fact-check overrides (if reliable)
-    # -----------------------------------------
+    # 1️⃣ Fact-check override
     if evidence == "contradicts" and sources:
         return {
             "verdict": "Fake News",
@@ -26,36 +21,34 @@ def final_decision(ml_result, fact_result):
             "sources": sources
         }
 
-    # -----------------------------------------
-    # 2️⃣ No fact-check evidence found
-    # -----------------------------------------
-    if evidence == "none" or not sources:
+    # 2️⃣ No fact-check evidence
+    # Lower threshold from 0.90 → 0.65
+    if not sources:
 
-        if confidence >= 0.90:
+        if confidence >= 0.65:
             if ml_label == "fake":
                 return {
                     "verdict": "Fake News",
-                    "reason": "High-confidence AI prediction. No contradicting evidence found.",
+                    "reason": "AI prediction (moderate-to-high confidence). No external contradiction found.",
                     "sources": []
                 }
             else:
                 return {
                     "verdict": "Likely True News",
-                    "reason": "High-confidence AI prediction. No contradicting evidence found.",
+                    "reason": "AI prediction (moderate-to-high confidence). No contradicting evidence found.",
                     "sources": []
                 }
 
+        # Very low confidence
         return {
             "verdict": "Uncertain",
-            "reason": "Insufficient external evidence and moderate AI confidence.",
+            "reason": "Low AI confidence and no external fact-check evidence.",
             "sources": []
         }
 
-    # -----------------------------------------
-    # 3️⃣ Mixed evidence
-    # -----------------------------------------
+    # 3️⃣ Mixed evidence fallback
     return {
         "verdict": "Uncertain",
-        "reason": "Conflicting information detected from available sources.",
+        "reason": "Conflicting or insufficient external information.",
         "sources": sources
     }
