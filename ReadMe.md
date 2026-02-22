@@ -121,6 +121,16 @@ fake-news-detection/
 ├── requirements.txt
 └── README.md
 ```
+## 📸 Application Preview
+
+### 🏠 Home Page
+![Home Page](Screenshots/Home.png)
+
+### ❌ Fake News Detection
+![Fake Result](Screenshots/Fake_result.png)
+
+### ✅ True News Detection
+![True Result](Screenshots/True_result.png)
 
 ---
 
