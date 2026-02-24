@@ -1,8 +1,8 @@
 <h1 align="center">📰 Fake News Verification System</h1>
+<h3 align="center">Designed & Engineered by SATYAM SINHA</h3>
 <p align="center">
 Hybrid AI + Fact-Check Based Misinformation Detection System
 </p>
-<h3 align="center">Designed & Engineered by SATYAM SINHA</h3>
 
 > A Machine Learning based web application that classifies news articles as **Real** or **Fake** using NLP techniques.
 
