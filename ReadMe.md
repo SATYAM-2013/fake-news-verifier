@@ -8,7 +8,7 @@ Hybrid AI + Fact-Check Based Misinformation Detection System
 
 ---
 
-## 📌 Project Overview
+##  Project Overview
 
 The **Fake News Detection System** is a Natural Language Processing (NLP) project that analyzes news text and predicts whether it is **genuine** or **misleading**.
 
@@ -22,7 +22,7 @@ This project demonstrates:
 
 ---
 
-## 🚀 Features
+##  Features
 
 ✔ Text cleaning and preprocessing
 ✔ Stopword removal and tokenization
@@ -33,7 +33,7 @@ This project demonstrates:
 
 ---
 
-## 🧠 Technologies Used
+##  Technologies Used
 
 * **Python**
 * **Scikit-learn**
@@ -45,14 +45,14 @@ This project demonstrates:
 
 ---
 
-## 📂 Dataset
+##  Dataset
 
 * Public Fake News dataset (e.g., Kaggle Fake & Real News Dataset)
 * Contains labeled news articles as **Fake (0)** and **Real (1)**
 
 ---
 
-## ⚙️ How It Works
+##  How It Works
 
 1. Input news text
 2. Preprocessing:
@@ -67,7 +67,7 @@ This project demonstrates:
 
 ---
 
-## 🖥 Installation & Setup
+##  Installation & Setup
 
 ```bash
 # Clone repository
@@ -85,7 +85,7 @@ python app.py
 
 ---
 
-## 📈 Future Improvements
+##  Future Improvements
 
 * Deep Learning (LSTM / BERT)
 * Real-time news API integration
@@ -95,7 +95,7 @@ python app.py
 
 ---
 
-## 📌 Example Usage
+##  Example Usage
 
 Input:
 
@@ -112,7 +112,7 @@ Confidence: 92%
 
 ---
 
-## 🧪 Project Structure
+##  Project Structure
 
 ```
 fake-news-detection/
@@ -124,7 +124,7 @@ fake-news-detection/
 ├── requirements.txt
 └── README.md
 ```
-## 📸 Application Preview
+##  Application Preview
 
 ### 🏠 Home Page
 <p align="center">
@@ -143,13 +143,13 @@ fake-news-detection/
 
 ---
 
-## 🤝 Contribution
+##  Contribution
 
 Contributions are welcome! Feel free to fork and submit pull requests.
 
 ---
 
-## 📬 Connect With Me
+##  Connect With Me
 
 LinkedIn: https://www.linkedin.com/in/satyam-sinha-b1646435b/
 GitHub: https://github.com/satyam-2013
