@@ -2,7 +2,7 @@
 <p align="center">
 Hybrid AI + Fact-Check Based Misinformation Detection System
 </p>
-> Developed by **SATYAM SINHA**
+> Developed by SATYAM SINHA
 
 > A Machine Learning based web application that classifies news articles as **Real** or **Fake** using NLP techniques.
 
