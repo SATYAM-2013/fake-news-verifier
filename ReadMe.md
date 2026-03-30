@@ -80,7 +80,9 @@ cd fake-news-detection
 pip install -r requirements.txt
 
 # Run application
-python app.py
+For starting API - uvicorn api:app --reload
+For starting Frontend - streamlit run app.py
+
 ```
 
 ---
